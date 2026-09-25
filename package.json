@@ -1,0 +1,69 @@
+{
+  "name": "stamp-ambassadors",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.9.0 <27.0.0"
+  },
+  "scripts": {
+    "dev": "next dev -p 3002",
+    "build": "prisma generate && next build",
+    "start": "next start -p ${PORT:-3002}",
+    "release": "prisma migrate deploy && prisma db seed",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "stress": "tsx scripts/stress.ts",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:all": "vitest run && playwright test",
+    "db:start": "prisma dev --detach --name stamp-ambassadors",
+    "db:stop": "prisma dev stop stamp-ambassadors",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:studio": "prisma studio",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:fake": "tsx scripts/fake-data.ts",
+    "db:setup": "node scripts/create-databases.mjs"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "7.10.0",
+    "@radix-ui/react-slot": "^1.3.3",
+    "@react-three/fiber": "^9.7.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "dotenv": "^17.4.2",
+    "geist": "^1.7.2",
+    "lucide-react": "^1.35.0",
+    "next": "16.3.3",
+    "pg": "^8.23.0",
+    "prisma": "7.10.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "tailwind-merge": "^3.6.0",
+    "three": "^0.185.1",
+    "tsx": "^4.23.12",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/three": "^0.185.4",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.3",
+    "playwright": "^1.63.0",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^4.1.11"
+  },
+  "allowScripts": {
+    "prisma@7.10.0": true,
+    "@prisma/engines@7.10.0": true,
+    "esbuild@0.28.2": true,
+    "unrs-resolver@1.12.2": true
+  }
+}

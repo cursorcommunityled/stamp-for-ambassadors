@@ -1,0 +1,868 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Stamp: paper, ink, a pressed mark.
+   An independent visual system built around proof and presence.
+--------------------------------------------------------------------------- */
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --paper: #efeee9;
+  --ink: #2a2a28;
+  --brand: #6b8072;
+  --mute: #8a8a84;
+  --line: #2a2a281a;
+
+  --background: var(--paper);
+  --surface: var(--paper);
+  --surface-raised: #f6f5f0;
+  --foreground: var(--ink);
+  --muted: var(--mute);
+  --subtle: #a3a39c;
+  --border: var(--line);
+  --border-strong: #2a2a2833;
+  --accent: var(--ink);
+  --accent-foreground: var(--paper);
+  --ring: #2a2a2866;
+
+  --score-high: oklch(48% 0.09 155);
+  --severity-high: oklch(52% 0.11 25);
+
+  --radius: 0;
+}
+
+.dark {
+  --paper: #1c1c1a;
+  --ink: #efeee9;
+  --brand: #94a89c;
+  --mute: #8a8a84;
+  --line: #efeee91f;
+
+  --background: var(--paper);
+  --surface: var(--paper);
+  --surface-raised: #242422;
+  --foreground: var(--ink);
+  --muted: var(--mute);
+  --subtle: #6e6e68;
+  --border: var(--line);
+  --border-strong: #efeee933;
+  --accent: var(--ink);
+  --accent-foreground: #1c1c1a;
+  --ring: #efeee966;
+
+  --score-high: oklch(72% 0.11 155);
+  --severity-high: oklch(68% 0.13 25);
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-brand: var(--brand);
+  --color-mute: var(--mute);
+  --color-line: var(--line);
+
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-ring: var(--ring);
+
+  --color-score-high: var(--score-high);
+  --color-severity-high: var(--severity-high);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  --font-display: var(--font-sans);
+  --font-wordmark: var(--font-inter-tight), var(--font-sans);
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
+    Monaco, Consolas, monospace;
+
+  /* Display type stays at weight 400; tracking tightens as size grows. */
+  --tracking-display: -0.03em;
+  --tracking-heading: -0.012em;
+
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+
+  --ease-out-quick: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    color-scheme: light dark;
+  }
+
+  body {
+    overflow-x: clip;
+    background-color: var(--paper);
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .tabular,
+  table {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--ink) 12%, transparent);
+  }
+
+  :focus-visible {
+    outline: 1px solid var(--ink);
+    outline-offset: 3px;
+  }
+}
+
+@layer components {
+  .stamp-card {
+    position: relative;
+    border-top: 1px solid color-mix(in srgb, var(--brand) 70%, transparent);
+    padding: 2rem 0 0;
+  }
+
+  .stamp-card::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    top: -3px;
+    left: 0;
+    width: 6px;
+    height: 6px;
+    background: var(--brand);
+  }
+
+  .stamp-seal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 7.5rem;
+    padding: 0.85rem 1rem;
+    border: 1.5px solid var(--ink);
+    box-shadow: inset 0 0 0 3px var(--paper), inset 0 0 0 4px
+      color-mix(in srgb, var(--ink) 35%, transparent);
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transform: rotate(-8deg);
+  }
+
+  .stamp-seal-ink {
+    background: var(--ink);
+    color: var(--paper);
+    box-shadow: inset 0 0 0 3px var(--ink), inset 0 0 0 4.5px
+      color-mix(in srgb, var(--paper) 55%, transparent);
+  }
+
+  .stamp-seal-warn {
+    border-color: var(--severity-high);
+    color: var(--severity-high);
+    box-shadow: inset 0 0 0 3px var(--paper), inset 0 0 0 4px
+      color-mix(in srgb, var(--severity-high) 40%, transparent);
+  }
+
+  .ticket {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.35rem 0 1.35rem 1.25rem;
+    border-left: 2px solid var(--line);
+  }
+
+  /* Tailwind's `divide-line` sets `border-color` outright, so it repaints this
+     stub on every row but the last. The separator is drawn here instead, which
+     leaves one rule in charge of both edges. */
+  .ticket + .ticket {
+    border-top: 1px solid var(--line);
+  }
+
+  .ticket.is-winner {
+    border-left-color: var(--brand);
+  }
+
+  /* The copy column keeps a readable width and pushes the code or button onto
+     its own line instead of letting either squeeze the other on a phone. */
+  .ticket > :first-child {
+    flex: 1 1 15rem;
+    min-width: 0;
+  }
+
+  /* Seven partners stack up here, so a partner is one line: number, name,
+     offer, and the button that acts on it. The steps sit under the same line,
+     which is the whole row's toggle. */
+  /* The button column takes what it needs and the rows stay one line each.
+     Capping it would only push a long code onto a second line, which is what
+     made the rows holding codes taller than the rest. */
+  .credit {
+    display: grid;
+    grid-template-columns: 2.15rem minmax(0, 1fr) auto;
+    column-gap: 0.85rem;
+    align-items: start;
+    padding: 1.4rem 0;
+  }
+
+  .credit + .credit {
+    border-top: 1px solid var(--line);
+  }
+
+  .credit-index {
+    padding-top: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.18em;
+    color: var(--mute);
+  }
+
+  /* One grammar for both lists on this page. A partner and a project are read
+     the same way — a name, a few words beside it, and one thing to press — so
+     they are shaped the same way and only the words differ. */
+  .credit-fold > summary,
+  .ballot-fold > summary {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: 0.7rem;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .credit-fold > summary::-webkit-details-marker,
+  .ballot-fold > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .credit-label,
+  .ballot-label {
+    display: flex;
+    min-width: 0;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.1rem 0.7rem;
+  }
+
+  .credit-name,
+  .ballot-name {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  .ballot-name a {
+    color: inherit;
+  }
+
+  .ballot-name a:hover {
+    opacity: 0.6;
+  }
+
+  .credit-perk,
+  .ballot-builders {
+    font-size: 0.875rem;
+    color: var(--mute);
+    transition: color 120ms ease;
+  }
+
+  /* Hover pulls the muted half of the line up to ink rather than dimming the
+     name, so the whole row settles on one weight and reads as one target. */
+  .credit-fold > summary:hover .credit-perk,
+  .credit-fold > summary:hover .credit-mark,
+  .credit-fold > summary:focus-visible .credit-perk,
+  .credit-fold > summary:focus-visible .credit-mark,
+  .ballot-fold > summary:hover .ballot-builders,
+  .ballot-fold > summary:hover .ballot-mark,
+  .ballot-fold > summary:focus-visible .ballot-builders,
+  .ballot-fold > summary:focus-visible .ballot-mark {
+    color: var(--ink);
+  }
+
+  /* Swaps glyphs rather than rotating, which stays crisp at this size. Set to
+     the text it follows: a marker a size off its own line reads as a typo. */
+  .credit-mark,
+  .ballot-mark {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    line-height: 1;
+    color: var(--mute);
+    transition: color 120ms ease;
+  }
+
+  .credit-mark::after,
+  .ballot-mark::after {
+    content: "+";
+  }
+
+  .credit-fold[open] .credit-mark::after,
+  .ballot-fold[open] .ballot-mark::after {
+    content: "–";
+  }
+
+  .credit-action {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  /* The button cannot share a line with the name on a phone, so it takes the
+     row under it and reads left like everything else. Copy swaps to the far
+     side with it: leading, it would push this row's chip out of line with
+     the plain buttons above and below. */
+  @media (max-width: 479px) {
+    .credit {
+      grid-template-columns: 2.15rem minmax(0, 1fr);
+    }
+
+    .credit-action {
+      grid-column: 2;
+      margin-top: 0.9rem;
+      align-items: flex-start;
+    }
+
+    .credit-copy {
+      flex-direction: row-reverse;
+    }
+  }
+
+  .credit-blurb {
+    margin-top: 0.75rem;
+    max-width: 36rem;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--mute);
+  }
+
+  .credit-howto {
+    margin-top: 0.8rem;
+    display: flex;
+    max-width: 36rem;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .credit-howto > li {
+    display: grid;
+    grid-template-columns: 1.1rem minmax(0, 1fr);
+    column-gap: 0.7rem;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--mute);
+  }
+
+  .credit-step-n {
+    padding-top: 0.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    color: var(--subtle);
+  }
+
+  /* Terms and asks, one level further in than the steps: nothing here is an
+     action, and numbering it beside real ones makes the list read longer. */
+  .credit-notes {
+    margin-top: 0.75rem;
+    max-width: 36rem;
+  }
+
+  .credit-notes > summary {
+    cursor: pointer;
+    width: fit-content;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    color: var(--mute);
+    list-style: none;
+  }
+
+  .credit-notes > summary:hover {
+    color: var(--ink);
+  }
+
+  .credit-notes > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .credit-notes > summary::after {
+    content: " +";
+  }
+
+  .credit-notes[open] > summary::after {
+    content: " –";
+  }
+
+  .credit-notes p {
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: var(--mute);
+    opacity: 0.8;
+  }
+
+  /* The line under the Credits / Voting toggle, on whichever side is open.
+     Both panels use it: the toggle changing a heading nobody reads is how a
+     toggle looks broken. */
+  /* A step above the labels around it: this is the one paragraph on the page
+     meant to be read rather than glanced at. Tucked close to the toggle and
+     given room before the list, because it describes the view the toggle
+     picked; hung halfway between the two it looked like a stray caption. */
+  .view-how {
+    margin-top: 0.85rem;
+    max-width: 34rem;
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    text-wrap: pretty;
+    color: var(--mute);
+  }
+
+  .view-how-lead {
+    color: var(--ink);
+  }
+
+  /* Open mic ballot. A project is one line — number, name, who built it, and
+     the button — with the pitch behind the toggle. Ten of them presented is a
+     normal night, and at three lines each that is a page of scrolling to find
+     the one you remember. */
+  .ballot {
+    display: grid;
+    grid-template-columns: 2.15rem minmax(0, 1fr) auto;
+    column-gap: 0.85rem;
+    align-items: start;
+    padding: 1.4rem 0;
+  }
+
+  .ballot + .ballot {
+    border-top: 1px solid var(--line);
+  }
+
+  /* Closed only. Live standings would point the last votes at the leader;
+     this box appears after the host has shut the ballot. */
+  .ballot.is-winner {
+    position: relative;
+    z-index: 1;
+  }
+
+  .ballot.is-winner::before {
+    content: "";
+    position: absolute;
+    inset: 0.45rem -0.85rem;
+    border: 1px solid var(--brand);
+    pointer-events: none;
+  }
+
+  .ballot.is-winner .ballot-index,
+  .ballot.is-winner .ballot-tally {
+    color: var(--brand);
+  }
+
+  .ballot.is-winner > *:not(.ballot-fireworks) {
+    position: relative;
+    z-index: 1;
+  }
+
+  .ballot-fireworks {
+    position: absolute;
+    inset: -1.75rem -2.25rem;
+    width: calc(100% + 4.5rem);
+    height: calc(100% + 3.5rem);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .ballot-won {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.15rem;
+    border: 1px solid var(--brand);
+    padding: 0 0.4rem;
+    font-size: 0.6875rem;
+    line-height: 1;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--brand);
+    white-space: nowrap;
+  }
+
+  .ballot-index {
+    padding-top: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.18em;
+    color: var(--mute);
+  }
+
+  /* A row, not a column: stacked, the tally under a closed ballot's badge
+     made those rows taller than the ones nobody voted for. */
+  .ballot-action {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+  }
+
+  @media (max-width: 479px) {
+    .ballot {
+      grid-template-columns: 2.15rem minmax(0, 1fr);
+    }
+
+    /* Reversed so the button lands under the name, in line with the buttons
+       on the rows above and below it. */
+    .ballot-action {
+      grid-column: 2;
+      margin-top: 0.9rem;
+      flex-direction: row-reverse;
+      justify-content: flex-end;
+    }
+  }
+
+  .ballot-blurb {
+    margin-top: 0.65rem;
+    max-width: 36rem;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--mute);
+  }
+
+  .ballot-tally {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--mute);
+  }
+
+  /* Height of a button, since it stands in for one: the row you voted for
+     should not sit shorter than the rows around it. */
+  .ballot-mine {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.25rem;
+    border: 1px solid var(--brand);
+    padding: 0 0.65rem;
+    font-size: 0.6875rem;
+    line-height: 1;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--brand);
+    white-space: nowrap;
+  }
+
+  /* Setup work, folded away. The shut state is a single row so several can
+     stack without reading as a wall of headings. */
+  .fold {
+    border-top: 1px solid var(--line);
+  }
+
+  .fold:last-child {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .fold > summary {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.35rem 0;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .fold > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .fold-title {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  .fold > summary:hover .fold-title {
+    opacity: 0.6;
+  }
+
+  .fold-meta {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: baseline;
+    gap: 0.85rem;
+  }
+
+  .fold-summary {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    color: var(--mute);
+  }
+
+  /* Swaps glyphs rather than rotating, which stays crisp at this size. */
+  .fold-mark {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1;
+    color: var(--mute);
+  }
+
+  .fold-mark::after {
+    content: "+";
+  }
+
+  .fold[open] .fold-mark::after {
+    content: "–";
+  }
+
+  .fold-body {
+    padding-bottom: 2.25rem;
+  }
+
+  .fold-hint {
+    margin-bottom: 0.25rem;
+    max-width: 28rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--mute);
+  }
+
+  .home-hero {
+    position: relative;
+    display: flex;
+    min-height: clamp(24rem, 40vw, 29rem);
+    align-items: center;
+    overflow: visible;
+  }
+
+  .home-hero-copy {
+    position: relative;
+    z-index: 2;
+    width: min(100%, 44rem);
+    padding: 3.5rem 0 4rem;
+  }
+
+  .home-hero-title {
+    margin-top: 1rem;
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 400;
+    line-height: 1.04;
+    letter-spacing: var(--tracking-display);
+  }
+
+  .home-hero-title > span {
+    display: block;
+  }
+
+  .home-hero-art.kinetic-art {
+    position: absolute;
+    top: -8%;
+    right: calc(50% - 50vw - 6rem);
+    bottom: 0;
+    left: -5%;
+    width: auto;
+    height: auto;
+    max-width: none;
+    aspect-ratio: auto;
+    background: transparent;
+  }
+
+  .kinetic-art {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    color: var(--brand);
+  }
+
+  .ink-field-webgl-fallback {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .ink-field-canvas {
+    position: absolute !important;
+    inset: 0;
+    z-index: 2;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .ink-field-webgl-fallback {
+    color: var(--brand);
+  }
+
+  @media (max-width: 767px) {
+    .home-hero {
+      min-height: 28rem;
+      align-items: flex-start;
+    }
+
+    .home-hero-copy {
+      padding: 2.5rem 0 7rem;
+    }
+
+    .home-hero-title {
+      font-size: clamp(2.5rem, 12vw, 3.5rem);
+    }
+
+    .home-hero-art.kinetic-art {
+      top: 0;
+      right: calc(50% - 50vw - 3rem);
+      bottom: 0;
+      left: -20%;
+    }
+  }
+}
+
+@layer utilities {
+  .wordmark {
+    font-family: var(--font-wordmark);
+    font-size: 1.4rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  .eyebrow {
+    font-size: 0.6875rem;
+    line-height: 1;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--mute);
+    font-family: var(--font-sans);
+  }
+
+  /* Credits / Voting. Same type as an eyebrow, but two places to stand. */
+  .event-menu {
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+  }
+
+  .event-menu-item {
+    font-size: 0.6875rem;
+    line-height: 1;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-family: var(--font-sans);
+  }
+
+  .event-menu-item {
+    color: var(--mute);
+  }
+
+  .event-menu-item.is-current {
+    color: var(--ink);
+  }
+
+  .event-menu-item.is-wait {
+    cursor: default;
+  }
+
+  /* Live, and not the panel they are already reading: the word takes the
+     colour as well, because a 5px square is not much to ask an eye halfway
+     down a list of partner offers to notice. On the panel they are on, the
+     mark alone is plenty and `is-current` keeps its ink. */
+  .event-menu-item.is-live:not(.is-current) {
+    color: var(--brand);
+  }
+
+  a.event-menu-item:hover,
+  a.event-menu-item.is-live:hover {
+    color: var(--ink);
+  }
+
+  /* A rule rather than a slash. A "/" between two words reads as one label
+     with a break in it; a line reads as two places to stand. Same divider the
+     header sets between the mark and the event name. */
+  .event-menu-rule {
+    align-self: center;
+    width: 1px;
+    height: 0.75rem;
+    background: var(--line);
+  }
+
+  /* The one coloured thing on an otherwise grey page, which is the whole job:
+     it has to be caught out of the corner of an eye that is reading partner
+     offers. It was a static square reading "Open now!", which sat far enough
+     to the right to look like a banner over Credits and Voting both, and
+     which a still page taught everyone to skip. Now it is only a mark, it
+     leads the word it belongs to, and it breathes. */
+  .event-menu-live {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    margin-right: 0.45rem;
+    vertical-align: 0.12em;
+    background: var(--brand);
+    /* Slow and shallow: enough to catch a glance, never enough to read as an
+       alert. Reduced motion drops it to the solid square it starts from. */
+    animation: live-breathe 2.4s ease-in-out infinite;
+  }
+
+  .hairline {
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--line);
+  }
+
+  .animate-in-fast {
+    animation: fade-rise 180ms var(--ease-out-quick);
+  }
+}
+
+@keyframes live-breathe {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(0.72);
+  }
+}
+
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* That blanket is written for animations that play once and settle on the
+     base style. A loop cannot be shortened into stillness — it just spins,
+     and lands on whatever opacity the frame catches. Turned off it falls back
+     to the solid square it breathes from, which is the mark we had before. */
+  .event-menu-live {
+    animation: none !important;
+  }
+}

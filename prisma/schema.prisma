@@ -1,0 +1,254 @@
+// Stamp: Luma-verified sponsor credits for community events.
+//
+// Connection URLs live in prisma.config.ts, not here (Prisma 7 convention).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model MagicLink {
+  id         String    @id @default(cuid())
+  email      String
+  tokenHash  String    @unique
+  nextPath   String    @default("/")
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([email])
+}
+
+/// A host appointed from Luma (or invited by an admin). Admins in
+/// ADMIN_EMAILS always manage every event. Appointed hosts manage the
+/// events they are assigned to, and cannot import the same Luma event twice.
+model Host {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  /// An admin's email, or `luma` when the row came from an event's host list.
+  grantedBy String
+  /// Null until an admin confirms. Luma names hosts without telling us their
+  /// access level, so a check-in volunteer arrives looking like a manager.
+  /// Nothing in `/admin` opens until this is set.
+  confirmedAt DateTime?
+  confirmedBy String?
+  /// Set once the admins have been told this address is waiting on them.
+  /// Separate from `confirmedAt` because the queue would otherwise be
+  /// announced again on every sync, and because a send that fails should
+  /// leave this null so the next sync tries again.
+  pendingNotifiedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  events Event[]
+}
+
+model Event {
+  id                  String  @id @default(cuid())
+  slug                String  @unique
+  name                String
+  /// Luma event id (starts with `evt-`).
+  lumaEventId         String  @unique
+  /// When true, codes stay locked until Luma reports the attendee checked in.
+  perksRequireCheckIn Boolean @default(true)
+
+  /// Appointed hosts. Admins manage the event regardless of this list.
+  hosts Host[]
+
+  /// Snapshot from Luma at create/refresh time. Guest lookup stays live.
+  startAt     DateTime?
+  endAt       DateTime?
+  timezone    String?
+  location    String?
+  coverUrl    String?
+  lumaUrl     String?
+  description String?
+
+  /// Set when a bulk roster sync is claimed, not when it finishes. A failed
+  /// sync therefore backs off for one TTL instead of hammering Luma.
+  guestsSyncedAt DateTime?
+  /// Same claim-a-slot trick for the event's host list. Discovery costs one
+  /// Luma call, so it may never ride on a page an attendee can load.
+  hostsSyncedAt  DateTime?
+
+  /// The open mic ballot. Opened and closed by hand: the running order is
+  /// written in live as teams present, so nothing here can be scheduled.
+  /// Both null means voting never opened. `openedAt` set with `closedAt`
+  /// null is the only state that accepts votes.
+  votingOpenedAt DateTime?
+  votingClosedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  attendees EventAttendee[]
+  codes     Code[]
+  projects  Project[]
+  votes     Vote[]
+  sponsors  Sponsor[]
+}
+
+/// One row per Luma guest. Re-sync matches on lumaGuestId, not email.
+/// People do change the address on a registration.
+model EventAttendee {
+  id      String @id @default(cuid())
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  lumaGuestId    String
+  email          String
+  name           String?
+  /// Mirrors Luma: approved, pending_approval, invited, declined, waitlist.
+  approvalStatus String
+  registeredAt   DateTime?
+  /// Earliest check-in across the guest's tickets. Null until they are scanned.
+  checkedInAt    DateTime?
+
+  /// Set once the door scan triggered an automatic assignment of this guest's
+  /// codes. Guards against handing out a second set on the next sync.
+  creditsAssignedAt DateTime?
+  /// Set once the "credits are ready" email went out. Separate from the
+  /// assignment so a failed send retries on the next sync.
+  notifiedAt        DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  codes Code[]
+  votes Vote[]
+
+  @@unique([eventId, lumaGuestId])
+  @@index([eventId, email])
+}
+
+model Sponsor {
+  id   String @id @default(cuid())
+  slug String @unique
+  name String
+  /// What the attendee gets, in their words: "$50 credits", "3 months Pro".
+  /// Shown beside the partner name so the offer reads before the steps do.
+  perk      String?
+  redeemUrl String?
+  /// Only things the attendee does, one action per line. Terms, caveats, and
+  /// asks belong in `notes`: numbering something you cannot act on makes the
+  /// list read longer and less doable than it is.
+  instructions String?
+  notes        String?
+  /// Prewritten how to get the offer. Shown to a stamped guest of the owning
+  /// event with no code pool. A code partner stays hidden until an event has
+  /// a CSV.
+  guide        Boolean  @default(false)
+  sortOrder    Int     @default(0)
+
+  /// The event whose page this partner was added on. Only that event lists
+  /// it, and only its guests see its how-to. Null is the shared list, which
+  /// only an admin adds to, and only with codes.
+  eventId String?
+  event   Event?  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  codes Code[]
+
+  @@index([eventId])
+}
+
+/// CSV inventory. A row with claimedByAttendeeId null is available.
+/// Leftovers keep their code string; admin reassigns eventId to the next event.
+model Code {
+  id      String @id @default(cuid())
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  sponsorId String
+  sponsor   Sponsor @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
+
+  code String
+
+  claimedByAttendeeId String?
+  claimedBy           EventAttendee? @relation(fields: [claimedByAttendeeId], references: [id], onDelete: SetNull)
+  claimedAt           DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@unique([sponsorId, code])
+  @@unique([eventId, sponsorId, claimedByAttendeeId])
+  @@index([eventId, sponsorId])
+}
+
+/// Something presented at the open mic. An organizer types these in from the
+/// back of the room while a team is still talking, so `description` is
+/// optional: a name and who built it is enough to put it on the ballot.
+model Project {
+  id      String @id @default(cuid())
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  name String
+  /// Who built it, in the organizer's words: "Ana & Marko", "Team Rocket".
+  /// Free text, not a link to EventAttendee. Teams include people who never
+  /// registered, and chasing that mapping mid-demo is not worth it.
+  builders    String
+  description String?
+
+  /// Presentation order, ascending. Ties fall back to createdAt so a row
+  /// added without a number still lands after the ones before it.
+  sortOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  votes Vote[]
+
+  @@index([eventId, sortOrder])
+}
+
+/// One attendee's single vote. `@@unique([eventId, attendeeId])` is the whole
+/// "one voting power" rule: moving a vote updates this row, so there is no
+/// path that writes a second one, even from two phones at once.
+model Vote {
+  id      String @id @default(cuid())
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  /// The Luma-verified guest, not the session email. Someone who re-registers
+  /// under a new address is the same attendee row, so still one vote.
+  attendeeId String
+  attendee   EventAttendee @relation(fields: [attendeeId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([eventId, attendeeId])
+  @@index([projectId])
+}
+
+/// One row per caller per window, counted in the database rather than in
+/// memory: a deploy must not hand everyone a fresh allowance, and two
+/// instances must not each grant the full one.
+model RateLimit {
+  key         String   @id
+  windowStart DateTime
+  count       Int      @default(0)
+
+  @@index([windowStart])
+}
+
+/// Who did what in `/admin`. Written for anything that moves codes, changes
+/// who can manage, or decides the ballot, because with more than one
+/// organizer "it was already like that" stops being an answer.
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorEmail String
+  action     String
+  eventSlug  String?
+  detail     String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+}

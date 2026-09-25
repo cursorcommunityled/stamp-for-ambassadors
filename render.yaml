@@ -1,0 +1,62 @@
+# Render blueprint. Create from the dashboard with "New > Blueprint".
+#
+# The generated Prisma client is gitignored, so `npm run build` regenerates it
+# before `next build`. Schema changes reach the database through the pre-deploy
+# step, which also re-seeds the Cursor sponsor row. The seed upserts, so it is
+# safe to repeat.
+#
+# Node version comes from .node-version, not from here, so a local run and a
+# deploy agree on the runtime.
+services:
+  - type: web
+    name: stamp-ambassadors
+    runtime: node
+    # Pick a region near the room. Every page load is a database round trip,
+    # so the service and the database below have to sit in the same region.
+    region: frankfurt
+    plan: starter # Free instances sleep, and a cold start at the door is a queue.
+    # Render sets NODE_ENV=production, and plain `npm ci` then skips
+    # devDependencies, which is where Tailwind and TypeScript live. The build
+    # needs them.
+    buildCommand: npm ci --include=dev && npm run build
+    # Pre-deploy runs on paid instance types. On a free one, move `npm run
+    # release` onto the end of buildCommand instead, or migrations never apply.
+    preDeployCommand: npm run release
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: stamp-ambassadors-db
+          property: connectionString
+      # Signs the session cookie. Generated once and then left alone:
+      # changing it signs everyone out.
+      - key: AUTH_SECRET
+        generateValue: true
+      # APP_URL is optional here. Left unset, the app falls back to
+      # RENDER_EXTERNAL_URL, which Render fills in with this service's URL.
+      # Set it explicitly once a custom domain is in front of the service.
+      - key: APP_URL
+        sync: false
+      - key: ADMIN_EMAILS
+        sync: false
+      - key: LUMA_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      # Optional. Wordmark, tagline, and footer line on every page.
+      - key: APP_NAME
+        sync: false
+      - key: APP_TAGLINE
+        sync: false
+      - key: FOOTER_CREDIT
+        sync: false
+
+databases:
+  - name: stamp-ambassadors-db
+    databaseName: stamp
+    user: stamp
+    region: frankfurt
+    plan: basic-256mb
